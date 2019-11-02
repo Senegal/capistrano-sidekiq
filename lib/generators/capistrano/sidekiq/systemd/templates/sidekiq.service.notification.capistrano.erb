@@ -1,0 +1,8 @@
+[Unit]
+Description=%i failure email notification 
+
+[Service]
+Type=oneshot
+Environment=RAILS_ENV=<%= fetch(:rails_env) %>
+WorkingDirectory=<%= fetch(:deploy_to) %>/current
+ExecStart=<%= fetch(:bundler_path, '/usr/local/bin/bundler') %> exec rails email_notifications:sidekiq_down

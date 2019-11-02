@@ -20,6 +20,7 @@ namespace :load do
     set :init_system, -> { nil }
     # systemd integration
     set :service_unit_name, "sidekiq-#{fetch(:stage)}.service"
+    set :service_unit_name_notification, "sidekiq-#{fetch(:stage)}-notification.service"
     set :upstart_service_name, "sidekiq"
   end
 end
@@ -203,6 +204,22 @@ namespace :sidekiq do
       StringIO.new(ERB.new(template).result(binding)),
       "#{systemd_path}/#{fetch :service_unit_name}"
     )
+
+    search_paths = [
+      File.expand_path(
+        File.join(*%w[.. .. .. generators capistrano sidekiq systemd templates sidekiq.service.notification.capistrano.erb]),
+        __FILE__
+      ),
+    ]
+    template_path = search_paths.detect {|path| File.file?(path)}
+    template = File.read(template_path)
+    systemd_path = fetch(:service_unit_path, fetch_systemd_unit_path)
+    execute :mkdir, "-p", systemd_path
+    upload!(
+      StringIO.new(ERB.new(template).result(binding)),
+      "#{systemd_path}/#{fetch :service_unit_name_notification}"
+    )
+
     execute :systemctl, "--user", "daemon-reload"
   end
 
