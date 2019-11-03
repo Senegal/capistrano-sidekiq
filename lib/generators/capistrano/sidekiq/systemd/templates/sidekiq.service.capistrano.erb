@@ -2,6 +2,8 @@
 Description=sidekiq for <%= "#{fetch(:application)} (#{fetch(:stage)})" %>
 After=syslog.target network.target
 OnFailure=sidekiq-stage-notification.service
+StartLimitBurst=3
+StartLimitIntervalSec=90
 
 [Service]
 Type=simple
@@ -11,7 +13,7 @@ ExecStart=<%= fetch(:bundler_path, '/usr/local/bin/bundler') %> exec sidekiq -e 
 ExecReload=/bin/kill -TSTP $MAINPID
 ExecStop=/bin/kill -TERM $MAINPID
 
-RestartSec=1
+RestartSec=10
 Restart=on-failure
 
 SyslogIdentifier=sidekiq
